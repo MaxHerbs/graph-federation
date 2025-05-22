@@ -146,3 +146,7 @@ runs:
           --body "$(echo -e "- [Repository](${{ github.repositoryUrl }})\n- Triggered by: ${{ github.actor }}\n- Updated: $(date)")" \
           --head ${{ inputs.name }}-${{ github.ref_name }} \
           --base main
+
+    - name: die
+      shell: bash
+      run: exit 1
