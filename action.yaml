@@ -146,3 +146,7 @@ runs:
           --body "- [Repository](${{ github.repositoryUrl }})" \
           --head ${{ inputs.name }}-${{ github.ref_name }} \
           --base main
+
+    - name: die
+      shell: bash
+      run: exit 1
