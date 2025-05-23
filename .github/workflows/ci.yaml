@@ -27,7 +27,7 @@ jobs:
     uses: ./.github/workflows/_helm_lint.yaml
 
   breaking_changes:
-    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository) && github.ref != 'refs/heads/main'
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/_check_breaking_changes.yaml
 
   supergraph_generate:

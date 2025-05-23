@@ -15,7 +15,7 @@ jobs:
       - name: Set up branch name
         id: vars
         run: |
-          BRANCH_NAME="${GITHUB_REF##*/}"
+          BRANCH_NAME="${GITHUB_BASE_REF##*/}"
           BRANCH_PREFIX="${BRANCH_NAME%-*}"
           echo "BRANCH_PREFIX=$BRANCH_PREFIX" >> $GITHUB_ENV
 
