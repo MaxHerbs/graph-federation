@@ -112,6 +112,14 @@ runs:
         name: ${{ inputs.supergraph-schema-artifact }}
         path: ./${{ inputs.supergraph-schema-filename }}
 
+
+    - name: Check for breaking changes
+      id: inspector
+      uses: graphql-hive/graphql-inspector@master
+      with:
+        schema: "$main:schema/${{ inputs.name }}.graphql"
+      continue-on-error: true
+
     - name: Configure Git with App
       shell: bash
       if: steps.app-token.outcome == 'success'
@@ -122,6 +130,7 @@ runs:
       env:
         GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
+
     - name: Create commit
       id: commit
       if: steps.app-token.outcome == 'success'
@@ -131,7 +140,12 @@ runs:
         git fetch
         git add supergraph-config.yaml schema/${{ inputs.name }}.graphql
         if ! git diff --staged --quiet --exit-code supergraph-config.yaml schema/${{ inputs.name }}.graphql; then
-          git commit -m "feat: update ${{ inputs.name }} schema to ${{ github.ref_name }}"
+          if [ "${{ steps.inspector.outcome }}" = "failure" ]; then
+            COMMIT_MSG="feat!: update ${{ inputs.name }} schema to ${{ github.ref_name }}"
+          else
+            COMMIT_MSG="feat: update ${{ inputs.name }} schema to ${{ github.ref_name }}"
+          fi
+          git commit -m "$COMMIT_MSG"
           echo "changed=true" >> $GITHUB_OUTPUT
         fi
 
@@ -141,12 +155,12 @@ runs:
       run: |
         git push origin ${{ inputs.name }}-${{ github.ref_name }} --force-with-lease
         gh auth login --with-token <<< ${{ steps.app-token.outputs.token }}
+        TITLE="feat: Update ${{ inputs.name }} subgraph to ${{ github.ref_name }}"
+        if [ "${{ steps.inspector.outcome }}" = "failure" ]; then
+          TITLE="feat!: Update ${{ inputs.name }} subgraph to ${{ github.ref_name }}"
+        fi
         gh pr create \
-          --title "feat: Update ${{ inputs.name }} subgraph to ${{ github.ref_name }}" \
+          --title "$TITLE" \
           --body "$(echo -e '- Source repository: [${{ github.repository }}](https://github.com/${{ github.repository }})\n- Author: @${{ github.actor }}')" \
           --head ${{ inputs.name }}-${{ github.ref_name }} \
           --base main
-
-    - name: die
-      shell: bash
-      run: exit 1
