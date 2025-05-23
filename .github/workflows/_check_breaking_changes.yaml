@@ -16,7 +16,7 @@ jobs:
         id: vars
         run: |
           BRANCH_NAME="${GITHUB_REF##*/}"
-          BRANCH_PREFIX="${BRANCH_NAME%%-*}"
+          BRANCH_PREFIX="${BRANCH_NAME%-*}"
           echo "BRANCH_PREFIX=$BRANCH_PREFIX" >> $GITHUB_ENV
 
       - name: Check if schema file exists
