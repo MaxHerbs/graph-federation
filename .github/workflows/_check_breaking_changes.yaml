@@ -1,0 +1,22 @@
+name: Check breaking changes
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    name: Check Schema
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up branch name
+        id: vars
+        run: echo "BRANCH_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      - name: Run GraphQL Inspector
+        uses: graphql-hive/graphql-inspector@master
+        with:
+          schema: "main:${{ env.BRANCH_NAME }}.graphql"
