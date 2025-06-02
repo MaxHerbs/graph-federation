@@ -69,7 +69,5 @@ jobs:
         if: steps.version.outputs.result != ''
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          name: "Release: ${{ github.ref_name }}"
           files: charts/supergraph/supergraph.graphql
 
