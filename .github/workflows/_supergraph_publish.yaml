@@ -65,13 +65,6 @@ jobs:
         if: steps.version.outputs.result != '' && github.event_name == 'push' && ( startsWith(github.ref, 'refs/tags') || startsWith(github.ref, 'refs/heads/main') )
         run: helm push $(ls supergraph-*.tgz) ${{ env.IMAGE_REPOSITORY }}
 
-      - name: Upload Supergraph Schema as Workflow Artifact
-        if: steps.version.outputs.result != ''
-        uses: actions/upload-artifact@v4.3.1
-        with:
-          name: supergraph-schema
-          path: charts/supergraph/supergraph.graphql
-
       - name: Create GitHub Release & Upload Schema
         if: steps.version.outputs.result != ''
         uses: softprops/action-gh-release@v1
