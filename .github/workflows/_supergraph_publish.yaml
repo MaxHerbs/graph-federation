@@ -7,7 +7,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - name: Checkout source
@@ -64,3 +64,34 @@ jobs:
       - name: Publish Chart
         if: steps.version.outputs.result != '' && github.event_name == 'push' && ( startsWith(github.ref, 'refs/tags') || startsWith(github.ref, 'refs/heads/main') )
         run: helm push $(ls supergraph-*.tgz) ${{ env.IMAGE_REPOSITORY }}
+
+      - name: Upload Supergraph Schema as Workflow Artifact
+        if: steps.version.outputs.result != ''
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: supergraph-schema
+          path: charts/supergraph/supergraph.graphql
+
+      - name: Create GitHub Release
+        if: steps.version.outputs.result != ''
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: "Relase: ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload Supergraph Schema to Release
+        if: steps.version.outputs.result != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: charts/supergraph/supergraph.graphql
+          asset_name: supergraph.graphql
+          asset_content_type: text/plain
+
